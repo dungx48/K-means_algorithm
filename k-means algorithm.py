@@ -101,6 +101,7 @@ while running:
         if event.type == pygame.MOUSEBUTTONDOWN:
             # create point on panel
             if 50 < mouse_x < 750 and 50 < mouse_y < 550:
+                labels = []
                 point = [mouse_x - 50, mouse_y - 50]
                 points.append(point)
                 print(points)
