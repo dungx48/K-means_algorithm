@@ -1,19 +1,35 @@
 import pygame
+from random import randint
+import math
+
+
+def distance(p1, p2):
+    return math.sqrt((p1[0] - p2[0]) * (p1[0] - p2[0]) + (p1[1] - p2[1]) * (p1[1] - p2[1]))
+
 
 pygame.init()
 
 screen = pygame.display.set_mode((1200, 700))
-
 pygame.display.set_caption("K-Means")
-
 running = True
-
 clock = pygame.time.Clock()
 
 background = (214, 214, 214)
+BACKGROUND_PANEL = (249, 255, 230)
+
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
-BACKGROUND_PANEL = (249, 255, 230)
+RED = (255, 0, 0)
+GREEN = (0, 255, 0)
+BLUE = (0, 0, 255)
+YELLOW = (147, 153, 35)
+PURPLE = (255, 0, 255)
+SKY = (0, 255, 255)
+ORANGE = (255, 125, 25)
+GRAPE = (100, 25, 125)
+GRASS = (55, 155, 65)
+
+COLOR = [RED, GREEN, BLUE, YELLOW, PURPLE, SKY, ORANGE, GRASS, GRAPE]
 
 font = pygame.font.SysFont('sans', 40)
 font_small = pygame.font.SysFont('sans', 20)
@@ -27,6 +43,8 @@ text_reset = font.render('Reset', True, WHITE)
 K = 0
 err = 0
 points = []
+clusters = []
+labels = []
 
 while running:
     clock.tick(60)
@@ -100,10 +118,41 @@ while running:
 
             # Run button
             if 850 < mouse_x < 1000 and 150 < mouse_y < 200:
-                print("run pressed")
+                labels = []
+
+                # assign point to closet cluster
+                for p in points:
+                    distance_to_cluster = []
+                    for c in clusters:
+                        distances = distance(p, c)
+                        distance_to_cluster.append(distances)
+
+                    min_distance = min(distance_to_cluster)
+                    label = distance_to_cluster.index(min_distance)
+                    labels.append(label)
+
+                # update clusters
+                for i in range(K):
+                    sum_x = 0
+                    sum_y = 0
+                    count = 0
+                    for j in range(len(points)):
+                        if labels[j] == i:
+                            sum_x += points[j][0]
+                            sum_y += points[j][1]
+                            count += 1
+                    if count != 0:
+                        new_cluster_x = sum_x / count
+                        new_cluster_y = sum_y / count
+                        clusters[i] = [new_cluster_x, new_cluster_y]
+                print("run")
 
             # Random button
             if 850 < mouse_x < 1000 and 250 < mouse_y < 300:
+                clusters = []
+                for i in range(K):
+                    random_point = [randint(0, 700), randint(0, 500)]
+                    clusters.append(random_point)
                 print("random")
 
             # Reset button
@@ -114,10 +163,18 @@ while running:
             if 850 < mouse_x < 1000 and 550 < mouse_y < 600:
                 print("algorithm")
 
+    # draw cluster
+    for i in range(len(clusters)):
+        pygame.draw.circle(screen, COLOR[i], (int(clusters[i][0]) + 50, int(clusters[i][1]) + 50), 10)
+
     # draw points
     for i in range(len(points)):
-        pygame.draw.circle(screen, BLACK, (points[i][0] + 50, points[i][1]+ 50), 6)
-        pygame.draw.circle(screen, WHITE, (points[i][0] + 50, points[i][1] + 50), 5)
+        pygame.draw.circle(screen, BLACK, (points[i][0] + 50, points[i][1] + 50), 6)
+
+        if labels == []:
+            pygame.draw.circle(screen, WHITE, (points[i][0] + 50, points[i][1] + 50), 5)
+        else:
+            pygame.draw.circle(screen, COLOR[labels[i]], (points[i][0] + 50, points[i][1] + 50), 5)
     pygame.display.flip()
 
 pygame.quit()
