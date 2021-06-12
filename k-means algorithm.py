@@ -1,6 +1,7 @@
 import pygame
 from random import randint
 import math
+from sklearn.cluster import KMeans
 
 
 def distance(p1, p2):
@@ -29,6 +30,7 @@ ORANGE = (255, 125, 25)
 GRAPE = (100, 25, 125)
 GRASS = (55, 155, 65)
 
+# 9 color = max K
 COLOR = [RED, GREEN, BLUE, YELLOW, PURPLE, SKY, ORANGE, GRASS, GRAPE]
 
 font = pygame.font.SysFont('sans', 40)
@@ -41,7 +43,6 @@ text_algorithm = font.render('Algorithm', True, WHITE)
 text_reset = font.render('Reset', True, WHITE)
 
 K = 0
-err = 0
 points = []
 clusters = []
 labels = []
@@ -84,10 +85,6 @@ while running:
     pygame.draw.rect(screen, BLACK, (850, 450, 150, 50))
     screen.blit(text_reset, (875, 450))
 
-    # error text
-    text_error = font.render("Error = " + str(int(err)), True, BLACK)
-    screen.blit(text_error, (850, 350))
-
     # Draw mouse poisition
     if 50 < mouse_x < 750 and 50 < mouse_y < 550:
         text_mouse = font_small.render("(" + str(mouse_x - 50) + "," + str(mouse_y - 50) + ")", True, BLACK)
@@ -108,7 +105,8 @@ while running:
 
             # Change K button +
             if 850 < mouse_x < 900 and 50 < mouse_y < 100:
-                K += 1
+                if K < 9:
+                    K += 1
                 print("Press K +")
 
             # Change K button -
@@ -120,6 +118,8 @@ while running:
             # Run button
             if 850 < mouse_x < 1000 and 150 < mouse_y < 200:
                 labels = []
+                if clusters == []:
+                    continue
 
                 # assign point to closet cluster
                 for p in points:
@@ -150,6 +150,7 @@ while running:
 
             # Random button
             if 850 < mouse_x < 1000 and 250 < mouse_y < 300:
+                labels = []
                 clusters = []
                 for i in range(K):
                     random_point = [randint(0, 700), randint(0, 500)]
@@ -158,10 +159,18 @@ while running:
 
             # Reset button
             if 850 < mouse_x < 1000 and 450 < mouse_y < 500:
+                K = 0
+                error = 0
+                points = []
+                labels = []
+                clusters = []
                 print("reset")
 
             # algorithm button
             if 850 < mouse_x < 1000 and 550 < mouse_y < 600:
+                kmeans = KMeans(n_clusters=K).fit(points)
+                labels = kmeans.predict(points)
+                clusters = kmeans.cluster_centers_
                 print("algorithm")
 
     # draw cluster
@@ -176,6 +185,15 @@ while running:
             pygame.draw.circle(screen, WHITE, (points[i][0] + 50, points[i][1] + 50), 5)
         else:
             pygame.draw.circle(screen, COLOR[labels[i]], (points[i][0] + 50, points[i][1] + 50), 5)
+
+    # calculate and error
+    error = 0
+    if clusters != [] and labels != []:
+        for i in range(len(points)):
+            error += distance(points[i], clusters[labels[i]])
+    text_error = font.render("Error = " + str(int(error)), True, BLACK)
+    screen.blit(text_error, (850, 350))
+
     pygame.display.flip()
 
 pygame.quit()
