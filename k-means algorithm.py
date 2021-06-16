@@ -34,6 +34,7 @@ GRASS = (55, 155, 65)
 COLOR = [RED, GREEN, BLUE, YELLOW, PURPLE, SKY, ORANGE, GRASS, GRAPE]
 
 font = pygame.font.SysFont('sans', 40)
+font_medium = pygame.font.SysFont('sans', 30)
 font_small = pygame.font.SysFont('sans', 20)
 text_plus = font.render('+', True, WHITE)
 text_minus = font.render('-', True, WHITE)
@@ -46,6 +47,7 @@ K = 0
 points = []
 clusters = []
 labels = []
+interation = 0
 
 while running:
     clock.tick(60)
@@ -118,6 +120,7 @@ while running:
             # Run button
             if 850 < mouse_x < 1000 and 150 < mouse_y < 200:
                 labels = []
+                interation += 1
                 if clusters == []:
                     continue
 
@@ -161,6 +164,7 @@ while running:
             if 850 < mouse_x < 1000 and 450 < mouse_y < 500:
                 K = 0
                 error = 0
+                interation = 0
                 points = []
                 labels = []
                 clusters = []
@@ -193,6 +197,10 @@ while running:
             error += distance(points[i], clusters[labels[i]])
     text_error = font.render("Error = " + str(int(error)), True, BLACK)
     screen.blit(text_error, (850, 350))
+
+    # interation
+    text_interation = font_medium.render("Interation = " + str(interation), True, BLACK)
+    screen.blit(text_interation, (1020, 150))
 
     pygame.display.flip()
 
